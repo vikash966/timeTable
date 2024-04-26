@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Home</title>
+</head>
+<body>
+    <h1>Teacher Homepage</h1>
+    <a href="{% url 'create-question' %}"><button>Create Question</button></a>
+    <ul>
+    {% for ques in questions %}
+        <li>{{ ques.question|truncatewords:20 }} - <a href="{% url 'teacher-question-detail' ques.id %}">Read More</a></li>
+    {% endfor %}
+    </ul>
+
+    <a href="{% url 'login' %}"><button>Logout</button></a>
+</body>
+</html>

@@ -1,0 +1,287 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+</head>
+<body>
+<div class="container mt-5" style="width:40%">
+
+    <div class="faculty-info">
+        <h2>Student Information</h2>
+        <div class="col-sm-4">
+            <img height="100vh" class="Profile-image" src="{{request.user.Profile.image.url}}">
+        </div>
+        
+        <div class="info-item">
+            <strong>Name:</strong> {{ user }}
+            
+          </div>
+        <div class="info-item">
+            <strong>Sap_id:</strong>{% for students in students %}
+            {% if students.user == request.user %}
+              {{ students.sapid }}
+            {% endif %}
+      
+      
+      
+          {% endfor %}
+          </div>
+      
+          <div class="info-item">
+            <strong>batch:</strong>{% for students in students %}
+            {% if students.user == request.user %}
+              {{ students.batch }}
+            {% endif %}
+      
+      
+      
+          {% endfor %}
+          </div>
+        
+      
+        <div class="info-item">
+          <strong>roll-no:</strong>{% for students in students %}
+          {% if students.user == request.user %}
+            {{ students.roll_no }}
+          {% endif %}
+      
+      
+      
+        {% endfor %}
+        </div>
+      
+      
+
+        <label for="course">course</label>
+        <select class="form-select" aria-label="Default select example" id="course" onchange="coursefield()">
+            <option selected>-----Choose course-----</option>
+            {% for i in course %}
+                <option value="{{i.id}}" {% if request.GET.course == i.id|lower %}selected{% endif %}>{{i.name}}</option>
+            {% endfor %}
+        </select>
+        <br/>
+        <label for="subjects">subjects</label>
+        <select class="form-select" aria-label="Default select example" id="subjects" onchange="subjectsfield()">
+            <option selected>-----Choose subjects-----</option>
+            {% for i in subjects %}
+                <option value="{{i.id}}" {% if request.GET.subjects == i.id|lower %}selected{% endif %}>{{i.name}}</option>
+            {% endfor %}
+        </select>
+        <br/>
+        <label for="timeslot">faculties</label>
+        <select class="form-select" aria-label="Default select example" id="timeslot" multiple>
+            <option selected>----Choose faculties----</option>
+            {% for teacher_name in teacher_names %}
+                <option value="{{ teacher_name }}">{{ teacher_name }}</option>
+            {% endfor %}
+        </select>
+        
+        
+    </div>
+    
+<div class="row mt-5">
+    <div class="col">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Teacher Name</th>
+                    <th>Start Hour</th>
+                    <th>Room</th>
+                    <th>Subject</th>
+                    <th>Weekday</th>
+                    <th>Booking</th>
+                </tr>
+            </thead>
+            <tbody id="timeslotDetailsTable">
+                {% for i in timeslot %}
+                <tr data-teacher="{{ i.teacher.first_name }}">
+                    <td>{{ i.teacher.first_name }}</td>
+                    <td>{{ i.get_start_hour_display }}</td>
+                    <td>{{ i.room.roomno }}</td>
+                    <td>{{ i.subjects.name }}</td>
+                    <td>{{ i.get_weekday_display }}</td>
+                    <td>
+                        {% if i.is_booked %}
+                        <button class="btn btn-secondary" disabled>Booked</button>
+                        {% else %}
+                        <button class="btn btn-primary" onclick="bookSlot('{{ i.id }}')">Book</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+            
+            
+        </table>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col">
+        <table class="table table-bordered">
+            <thead>
+                <h1>booked slots</h1>
+                <th>Teacher Name</th>
+                    <th>Start Hour</th>
+                    <th>Room</th>
+                    <th>Subject</th>
+                    <th>Weekday</th>
+                <!-- Table headers -->
+            </thead>
+            <tbody id="timeslotDetailsTable">
+                {% for booking in student_bookings %}
+                <tr>
+                    <td>{{ booking.timeslot.teacher.first_name }}</td>
+                    <td>{{ booking.timeslot.get_start_hour_display }}</td>
+                    <td>{{ booking.timeslot.room.roomno }}</td>
+                    <td>{{ booking.timeslot.subjects.name }}</td>
+                    <td>{{ booking.timeslot.get_weekday_display }}</td>
+                    <td>
+                        <form method="post" class="remove-form" action="{% url 'student_home' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove_slot" value="{{ booking.id }}">  <!-- Use 'booking.id' -->
+                            <button class="btn btn-danger" type="submit">Remove</button>
+                        </form>
+                    </td>
+                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col">
+        <a href="{% url 'download_pdf' %}" class="btn btn-primary">Download PDF</a>
+    </div>
+</div>
+<!-- "Download PDF" button -->
+
+
+    
+
+
+<script>
+    function coursefield() {
+        courseid = document.getElementById('course').value;
+        const currentUrl = window.location.href;
+        const updatedUrl = updateUrlQueryParameter(currentUrl, 'course', courseid);
+        window.location.href = updatedUrl;
+    }
+    
+    function subjectsfield() {
+        subjectsid = document.getElementById('subjects').value;
+        const currentUrl = window.location.href;
+        const updatedUrl = updateUrlQueryParameter(currentUrl, 'subjects', subjectsid);
+        window.location.href = updatedUrl;
+    }
+    
+    function updateUrlQueryParameter(url, key, value) {
+        const urlObj = new URL(url);
+        urlObj.searchParams.set(key, value);
+        return urlObj.toString();
+    }
+    
+    
+  
+  
+  function bookSlot(timeslotId) {
+    const csrfToken = getCookie('csrftoken');
+
+    // Send a POST request to book the selected timeslot
+    fetch(`/book_slot/${timeslotId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({}),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                
+                // Reload the page to update the booked status
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
+// Function to get the CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + '=') {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+  const timeslotSelect = document.getElementById('timeslot');
+  const timeslotDetailsTable = document.getElementById('timeslotDetailsTable');
+
+  timeslotSelect.addEventListener('change', () => {
+      const selectedTeacherNames = Array.from(timeslotSelect.selectedOptions, option => option.value);
+      const tableRows = timeslotDetailsTable.querySelectorAll('tr');
+
+      tableRows.forEach(row => {
+          const teacherName = row.getAttribute('data-teacher');
+          if (selectedTeacherNames.includes(teacherName)) {
+              row.style.display = 'table-row';
+          } else {
+              row.style.display = 'none';
+          }
+      });
+
+      // Clear the selected teacher data
+      teacherNameElem.innerHTML = '';
+      startHourElem.innerHTML = '';
+      roomNoElem.innerHTML = '';
+      subjectElem.innerHTML = '';
+      weekdayElem.innerHTML = '';
+      isBookedElem.innerHTML = '';
+
+      // Populate the selected teacher data
+      selectedTeacherNames.forEach(teacherName => {
+          const selectedRows = timeslotDetailsTable.querySelectorAll(`tr[data-teacher="${teacherName}"]`);
+          selectedRows.forEach(row => {
+              teacherNameElem.innerHTML += 'Teacher Name: ' + teacherName + '<br>';
+              startHourElem.innerHTML += 'Start Hour: ' + row.cells[1].textContent + '<br>';
+              roomNoElem.innerHTML += 'Room: ' + row.cells[2].textContent + '<br>';
+              subjectElem.innerHTML += 'Subject: ' + row.cells[3].textContent + '<br>';
+              weekdayElem.innerHTML += 'Weekday: ' + row.cells[4].textContent + '<br>';
+              isBookedElem.innerHTML += 'Is Booked: ' + row.cells[5].textContent + '<br>';
+          });
+      });
+  });
+</script>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+        <a href="{% url 'login' %}"><button>Logout</button></a>
+</body>
+</html>

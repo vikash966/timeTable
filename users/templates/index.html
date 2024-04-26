@@ -1,0 +1,398 @@
+<html>
+<head>
+  <title>{% block title %}{% endblock title %} |UPES SAP Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+   
+</head>
+    <style>
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f2f2f2;
+      }
+      
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      
+      .faculty-info {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 20px;
+      }
+      
+      .info-item {
+        margin-bottom: 10px;
+      }
+      
+      .subject-select {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 20px;
+      }
+      
+      .subject-table th,
+      .subject-table td {
+        padding: 10px;
+        text-align: left;
+      }
+      
+      .classroom-select {
+        margin-bottom: 20px;
+      }
+      
+      .button {
+        text-align: center;
+        margin-top: 20px;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+      }
+      
+      th {
+        background-color: #f2f2f2;
+      }
+      /* Add this to your existing CSS */
+      
+      .container-fluid {
+        max-width: 100%;
+      }
+      .timetable {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-gap: 4px;
+      }
+      
+      .slot {
+        background-color: #f2f2f2;
+        text-align: center;
+        padding: 8px;
+        border: 1px solid #ccc;
+        position: relative;
+        z-index: 0; /* Add this line */
+      }
+      
+      .room-dropdown {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 1;
+      }
+      
+      .save-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: green;
+        color: white;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      
+      .save-button.clicked {
+        background-color: blue;
+      }
+      
+      .hidden {
+        display: none;
+      }
+      
+    </style>
+  </head>
+
+  <body>
+    
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">UPES</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://www.upes.ac.in/">About Us</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Services 
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="/services">Action</a></li>
+            <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Something else here</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://www.upes.ac.in/contact-us">Contact Us</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="container">
+      <h1>Welcome, Faculty Member</h1>
+
+      <div class="faculty-info">
+        <h2>Faculty Information</h2>
+        
+          <img
+            height="120vh" 
+            class="Profile-image"
+            src="{{request.user.Profile.image.url}}"
+          />
+        
+        
+        <div class="info-item">
+          <strong>Name:</strong> {{user.first_name}}
+        </div>
+        <div class="info-item">
+          <strong>  Sap_id:</strong>
+          {% for teacher in teacher %}
+            {% if teacher.user == request.user %}
+              {{ teacher.sapid }}
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="info-item">
+          <strong>  position:</strong>
+          {% for teacher in teacher %}
+            {% if teacher.user == request.user %}
+              {{ teacher.position }}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    
+
+      
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="dropdown-select">
+          <div class="" style="margin: 1rem;">
+            <select id="subjectss" name="subjectss">
+              <option value="" disabled selected hidden>Choose subject</option>
+              {% for subject in subjectss %}
+                <option value="{{ subject.id }}">
+                  {{ subject.name }} (Remaining Credits: {{ subject.remaining_credits }})
+                </option>
+              {% endfor %}
+            </select>
+            <p id="subject-error" style="color: red;" class="hidden">Please select the subject</p>
+          </div>
+        </div>
+ 
+
+      </form>
+
+      {% load custom_filters %}
+
+      <!-- ... Other code ... -->
+    <div>
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+<div class="timetable">
+  <div class="slot">Time</div>
+  <div class="slot">Monday</div>
+  <div class="slot">Tuesday</div>
+  <div class="slot">Wednesday</div>
+  <div class="slot">Thursday</div>
+  <div class="slot">Friday</div>
+  <div class="slot">Saturday</div>
+  {% for start_hour in start_hours %}
+    <div class="slot">{{ start_hour }}</div>
+    {% for weekday in weekdays %}
+      <div class="slot" data-weekday="{{ forloop.counter0 }}" data-start-hour="{{ start_hour }}">
+        {% if booked_slots_dict|get_item:weekday and booked_slots_dict|get_item:weekday|get_item:start_hour %}
+          <select disabled>
+            <option value="">Already Booked</option>
+          </select>
+        {% else %}
+          <select onchange="handleSelect(this)" data-start_hour="{{ start_hour }}" data-weekday="{{ weekday }}" class="room-dropdown">
+            <option value="">Choose room</option>
+            {% for room in available_rooms_by_slot|get_nested_value:weekday|get_nested_value:start_hour %}
+              <option value="{{ room.id }}">{{ room.roomno }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endfor %}
+</div>
+
+<!-- ... Other code ... -->
+
+
+
+  
+      <div class="row mt-5">
+        <div class="col">
+          <h2>Booked Slots</h2>
+          <table class="table table-bordered" id="alreadyBookedSlotsTable">
+            <thead>
+              <tr>
+                <th>Teacher Name</th>
+                <th>Start Hour</th>
+                <th>Room</th>
+                <th>Subject</th>
+                <th>Weekday</th>
+              </tr>
+            </thead>
+            <tbody id="timeslotDetailsTable">
+              {% for i in timeslot %}
+                {% if i.teacher.sapid == logged_in_teacher.sapid %}
+                  {# Filter data by SAP ID #}
+                  <tr data-teacher="{{ i.teacher.first_name }}">
+                    <td>{{ i.teacher.first_name }}</td>
+                    <td>{{ i.get_start_hour_display }}</td>
+                    <td>{{ i.room.roomno }}</td>
+                    <td>{{ i.subjects.name }}</td>
+                    <td>{{ i.get_weekday_display }}</td>
+                    <td>
+                      <form method="post" class="remove-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="remove_slot" value="{{ i.id }}">
+                        <button class="btn btn-danger" type="submit">Remove</button>
+                      </form>
+                      
+                      
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="button">
+        <div type="button" id="button" class="save-button">Book-Slot</div>
+        <!-- Move the button here -->
+      </div>
+    </div>
+
+
+
+    <!-- ... Other code ... -->
+
+    <script>
+      
+      // Function to refresh the page
+      const refreshPage = () => {
+        location.reload(); // Reload the page
+      };
+
+      const handleSelect = (event) => {
+        const button = document.getElementById('button');
+      
+        
+        const subject = document.getElementById('subjectss').value;
+      
+        
+      
+        const subjectError = document.getElementById('subject-error');
+        subjectError.classList.add('hidden');
+        if (subject === '') {
+          subjectError.classList.remove('hidden');
+          return;
+        }
+      
+        const { weekday, start_hour } = event.dataset;
+        const roomID = event.value;
+      
+        const payload = {
+          
+          subject: subject,
+          weekday: weekday,
+          start_hour: start_hour,
+          roomID: roomID
+        };
+      
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('X-CSRFToken', '{{csrf_token}}');
+      
+        const submitForm = async (payload) => {
+          button.style.backgroundColor = 'gray';
+          button.innerText = 'Booking slot ...';
+      
+          try {
+            const response = await fetch("{% url 'handle_slot_booking' %}", {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+      
+            if (data.success) {
+              setTimeout(() => {
+                button.style.backgroundColor = 'green';
+                button.innerText = 'Slot Booked successfully';
+                refreshPage(); // Refresh the page after successful booking
+              }, 3000);
+            } else {
+              setTimeout(() => {
+                button.style.backgroundColor = 'red';
+                button.innerText = 'Something went wrong!';
+              }, 3000);
+            }
+            console.log(data);
+          } catch (error) {
+            console.error("Error booking slot:", error);
+          }
+        };
+      
+        submitForm(payload);
+      }
+      
+      const handleBookSlot = () => {
+        
+        const subject = document.getElementById('');
+      }
+      
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+        <a href="{% url 'login' %}"><button>Logout</button></a>
+  </body>
+</html>
